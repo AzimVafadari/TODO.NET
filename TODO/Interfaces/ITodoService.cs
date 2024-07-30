@@ -13,7 +13,7 @@ public interface ITodoService
     Task<Todo> GetTodoById(int id);
     
     // get all todos
-    Task<List<Todo>> GetAllTodosAsync();
+    IEnumerable<Todo> GetAllTodosAsync();
     
     // delete a todo
     Task<bool> DeleteTodoAsync(int id);
