@@ -8,6 +8,6 @@ public class User
     public int UserId { set; get; }
     public string Username { set; get; } = string.Empty;
     public string Password { set; get; } = string.Empty;
-    // List of Todos
-    public ICollection<Todo> Todos = new List<Todo>();
+    // Navigation property
+    public virtual ICollection<Todo> Todos { get; set; } = new List<Todo>();
 }
