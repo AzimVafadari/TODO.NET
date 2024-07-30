@@ -13,7 +13,7 @@ public interface IUserService
     Task<User> GetUserById(int id);
     
     // get all users
-    Task<List<User>> GetAllUsersAsync();
+    IEnumerable<User> GetAllUsersAsync();
     
     // delete a user
     Task<bool> DeleteUserAsync(int id);
