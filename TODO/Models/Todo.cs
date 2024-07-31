@@ -19,4 +19,21 @@ public class Todo
     // Navigation property
     [ForeignKey("UserId")]
     public User User { set; get; }
+
+    public Todo(string status, string title, string description, int userId, int todoId)
+    {
+        Status = status;
+        Title = title;
+        Description = description;
+        UserId = userId;
+        TodoId = todoId;
+    }
+    
+    public Todo(string status, string title, string description, int userId)
+    {
+        Status = status;
+        Title = title;
+        Description = description;
+        UserId = userId;
+    }
 }

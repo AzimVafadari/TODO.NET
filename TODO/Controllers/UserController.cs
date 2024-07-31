@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using TODO.Dtos;
@@ -25,13 +26,17 @@ namespace TODO.Controllers
         public async Task<IActionResult> Login([FromBody] UserDto userDto)
         {
             User? user = await userService.GetUserByUsernameAsync(userDto.Username);
+            if (user.IsDeleted)
+            {
+                return Ok("User not found");
+            }
             if (user == null)
             {
                 return BadRequest("User Not found");
             }
             if (user.Password.Equals(userDto.Password))
             {
-                var tokenString = GenerateJwt();
+                var tokenString = GenerateJwt(user);
                 return Ok(new { token = tokenString });
             }
             return Unauthorized();
@@ -49,19 +54,20 @@ namespace TODO.Controllers
             return BadRequest("User not found");
         }
         
-        private string GenerateJwt()
+        private string GenerateJwt(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, "Azim"),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim("UserId", user.UserId.ToString())
             };
             var token = new JwtSecurityToken(config["Jwt:Issuer"],
                 config["Jwt:Audience"],
                 claims,
-                expires: DateTime.Now.AddMinutes(1),
+                expires: DateTime.Now.AddMinutes(10),
                 signingCredentials: credentials
             );
             return new JwtSecurityTokenHandler().WriteToken(token);

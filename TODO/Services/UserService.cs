@@ -33,6 +33,6 @@ public class UserService(AppDbContext appDbContext) : IUserService
     public Task<User?> GetUserByUsernameAsync(string username)
     {
         return appDbContext.Users
-            .FirstOrDefaultAsync(u => u.Username.Equals(username));
+            .FirstOrDefaultAsync(u => u.Username.Equals(username) && !u.IsDeleted);
     }
 }
