@@ -5,7 +5,6 @@ namespace TODO.Models;
 
 public class Todo
 {
-    [Key]
     public int TodoId { get; }
     public string Status { set; get; } = string.Empty;
     [MinLength(4), MaxLength(15), Required]
