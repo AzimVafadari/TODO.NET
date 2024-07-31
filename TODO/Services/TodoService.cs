@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TODO.Data;
 using TODO.Dtos;
 using TODO.Interfaces;
@@ -37,6 +35,7 @@ public class TodoService(AppDbContext appDbContext) : ITodoService
                 TodoId = t.TodoId,
                 Title = t.Title,
                 Description = t.Description,
+                Status = t.Status,
             }) ?? Enumerable.Empty<TodoDto>();
 
         return todos;

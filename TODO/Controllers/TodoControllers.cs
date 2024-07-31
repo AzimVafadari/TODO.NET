@@ -1,8 +1,5 @@
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.JsonWebTokens;
 using TODO.Dtos;
 using TODO.Interfaces;
 using TODO.Models;
@@ -44,10 +41,16 @@ namespace TODO.Controllers
 
         private int GetUserIdFromToken()
         {
-            ClaimsIdentity identity = new ClaimsIdentity();
-            var userIdClaim = identity.FindFirst("UserId");
+            var userIdClaim = User.FindFirst("UserId");
+
+            if (userIdClaim == null)
+            {
+                throw new InvalidOperationException("User ID claim not found in token.");
+            }
+
             return int.Parse(userIdClaim.Value);
         }
+
     }
     
 }

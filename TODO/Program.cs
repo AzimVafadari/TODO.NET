@@ -16,6 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddDbContext<AppDbContext>(op =>
     op.UseSqlServer(builder.Configuration.GetConnectionString("AppDbContext")));
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITodoService, TodoService>();
 builder.Services.AddControllers();
 // Add swagger for authentication
 builder.Services.AddSwaggerGen(option =>
