@@ -39,7 +39,7 @@ public class UserService(AppDbContext appDbContext, IConfiguration config) : IUs
         {
             if (user.IsDeleted)
             {
-                throw new                 
+                throw new UserAlreadyDeletedException();
             }
             user.IsDeleted = true;
             appDbContext.Users.Update(user);

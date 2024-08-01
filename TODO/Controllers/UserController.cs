@@ -39,17 +39,13 @@ namespace TODO.Controllers
             }
             catch (Exception e)
             {
-                if (e is UserNotFoundException)
+                return e switch
                 {
-                    return NotFound(new BaseResponseDto<LoginDto?>(null, "User not found"));
-                } else if (e is PasswordIncorrectException)
-                {
-                    return BadRequest(new BaseResponseDto<LoginDto?>(null, "Password is incorrect"));
-                }
-                else
-                {
-                    return StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"));
-                }
+                    UserNotFoundException => NotFound(new BaseResponseDto<LoginDto?>(null, "User not found")),
+                    PasswordIncorrectException => BadRequest(new BaseResponseDto<LoginDto?>(null, "Password is incorrect")),
+                    UserAlreadyDeletedException => Conflict(new BaseResponseDto<UserDto?>(null, "User already deleted")),
+                    _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
+                };
             }
         }
 
@@ -62,14 +58,12 @@ namespace TODO.Controllers
             }
             catch (Exception e)
             {
-                if (e is UserNotFoundException)
+                return e switch
                 {
-                    return NotFound(new BaseResponseDto<LoginDto?>(null, "User not found"));
-                }
-                else
-                {
-                    return StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"));
-                }
+                    UserNotFoundException => NotFound(new BaseResponseDto<LoginDto?>(null, "User not found")),
+                    UserAlreadyDeletedException => Conflict(new BaseResponseDto<UserDto?>(null, "User already deleted")),
+                    _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
+                };
             }
         }
     }
