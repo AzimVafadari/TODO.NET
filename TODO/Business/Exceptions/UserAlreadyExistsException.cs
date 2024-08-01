@@ -6,6 +6,10 @@ public class UserAlreadyExistsException : Exception
     public UserAlreadyExistsException(string message) : base(message) 
     {
     }
+    
+    public UserAlreadyExistsException() 
+    {
+    }
 
     // Constructor that takes a message and an inner exception
     public UserAlreadyExistsException(string message, Exception innerException) : base(message, innerException) 

@@ -1,48 +1,64 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using TODO.Business.Exceptions;
 using TODO.Dtos;
 using TODO.Interfaces;
-using TODO.Models;
-using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace TODO.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserService userService, IConfiguration config) : ControllerBase
+    public class UserController(IUserService userService) : ControllerBase
     {
-        [HttpPost("create")]
-        public async Task<IActionResult> CreateUser([FromBody] UserDto user)
+        [HttpPost("createUser")]
+        public async Task<BaseResponseDto<UserDto?>> CreateUser([FromBody] UserDto user)
         {
-            await userService.CreateUserAsync(user);
-            return Ok("User created successfully");
+            BaseResponseDto<UserDto?> baseResponseDto;
+            try
+            {
+                baseResponseDto = new BaseResponseDto<UserDto?>(await userService.CreateUserAsync(user), 200,
+                    "User created successfully");
+                return baseResponseDto;
+            }
+            catch (Exception e)
+            {
+                if (e is UserAlreadyExistsException)
+                {
+                    baseResponseDto = new BaseResponseDto<UserDto?>(null, 500, "User already exists");
+                    return baseResponseDto;
+                }
+                else
+                {
+                    baseResponseDto = new BaseResponseDto<UserDto?>(null, 500, "Internal error");
+                    return baseResponseDto;
+                }
+            }
         }
         
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserDto userDto)
+        public async Task<ActionResult<string>> Login([FromBody] UserDto userDto)
         {
-            User? user = await userService.GetUserByUsernameAsync(userDto.Username);
-            if (user.IsDeleted)
+            try
             {
-                return Ok("User not found");
+                return Ok(await userService.Login(userDto));
             }
-            if (user == null)
+            catch (Exception e)
             {
-                return BadRequest("User Not found");
+                if (e is UserNotFoundException)
+                {
+                    return StatusCode(404, "User not found");
+                } else if (e is PasswordIncorrectException)
+                {
+                    return StatusCode(404, "Password is incorrect");
+                }
+                else
+                {
+                    return StatusCode(500, "Internal error");
+                }
             }
-            if (user.Password.Equals(userDto.Password))
-            {
-                var tokenString = GenerateJwt(user);
-                return Ok(new { token = tokenString });
-            }
-            return Unauthorized();
         }
 
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUserById(int id)
+        [HttpDelete("deleteUser{id}")]
+        public async Task<ActionResult<string>> DeleteUserById(int id)
         {
             bool isDeleted = await userService.DeleteUserAsync(id);
             if (isDeleted)
@@ -50,26 +66,7 @@ namespace TODO.Controllers
                 return Ok("The user deleted successfully");
             }
 
-            return BadRequest("User not found");
-        }
-        
-        private string GenerateJwt(User user)
-        {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("UserId", user.UserId.ToString())
-            };
-            var token = new JwtSecurityToken(config["Jwt:Issuer"],
-                config["Jwt:Audience"],
-                claims,
-                expires: DateTime.Now.AddMinutes(10),
-                signingCredentials: credentials
-            );
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return StatusCode(404, "User not found");
         }
     }
 }

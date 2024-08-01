@@ -4,7 +4,7 @@ using TODO.Dtos;
 using TODO.Interfaces;
 using TODO.Models;
 
-namespace TODO.Services;
+namespace TODO.Business.Services;
 
 public class TodoService(AppDbContext appDbContext) : ITodoService
 {
