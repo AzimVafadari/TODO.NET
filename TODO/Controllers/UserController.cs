@@ -18,14 +18,11 @@ namespace TODO.Controllers
             }
             catch (Exception e)
             {
-                if (e is UserAlreadyExistsException)
+                return e switch
                 {
-                    return Conflict(new BaseResponseDto<UserDto?>(null, "User already exists"));
-                }
-                else
-                {
-                    return StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"));
-                }
+                    UserAlreadyExistsException => Conflict(new BaseResponseDto<UserDto?>(null, "User already exists")),
+                    _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
+                };
             }
         }
         
