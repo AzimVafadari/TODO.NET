@@ -37,9 +37,14 @@ public class UserService(AppDbContext appDbContext, IConfiguration config) : IUs
         User user = await appDbContext.Users.FindAsync(id) ?? throw new InvalidOperationException();
         if (user != null)
         {
+            if (user.IsDeleted)
+            {
+                throw new                 
+            }
             user.IsDeleted = true;
             appDbContext.Users.Update(user);
             await appDbContext.SaveChangesAsync();
+            return new UserDto(user.Username, user.Password);
         }
 
         throw new UserNotFoundException();

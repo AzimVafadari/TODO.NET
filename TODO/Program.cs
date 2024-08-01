@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using TODO.Business.Interfaces;
 using TODO.Business.Services;
 using TODO.Data;
 using TODO.Interfaces;
-using TODO.Business.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

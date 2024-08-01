@@ -24,7 +24,7 @@ namespace TODO.Controllers
                 }
                 else
                 {
-                    return StatusCode(500, "Internal error");
+                    return StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"));
                 }
             }
         }
@@ -48,7 +48,7 @@ namespace TODO.Controllers
                 }
                 else
                 {
-                    return StatusCode(500, "Internal error");
+                    return StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"));
                 }
             }
         }
@@ -58,7 +58,7 @@ namespace TODO.Controllers
         {
             try
             {
-                return Ok(new BaseResponseDto<UserDto?>(null, "The user deleted successfully"));
+                return Ok(new BaseResponseDto<UserDto?>(await userService.DeleteUserAsync(id), "The user deleted successfully"));
             }
             catch (Exception e)
             {
@@ -68,7 +68,7 @@ namespace TODO.Controllers
                 }
                 else
                 {
-                    return StatusCode(500, "Internal error");
+                    return StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"));
                 }
             }
         }
