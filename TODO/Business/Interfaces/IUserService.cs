@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using TODO.Dtos;
 
-namespace TODO.Interfaces;
+namespace TODO.Business.Interfaces;
 using TODO.Models;
 
 public interface IUserService
@@ -11,11 +10,11 @@ public interface IUserService
     Task<UserDto> CreateUserAsync(UserDto user);
     
     // delete a user
-    Task<bool> DeleteUserAsync(int id);
+    Task<UserDto> DeleteUserAsync(int id);
     
     // find user by username
     Task<User?> GetUserByUsernameAsync(string username);
     
     // get token in login
-    Task<Object> Login([FromBody] UserDto userDto);
+    Task<string> Login([FromBody] UserDto userDto);
 }

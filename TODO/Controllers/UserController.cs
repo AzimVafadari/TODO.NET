@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TODO.Business.Exceptions;
+using TODO.Business.Interfaces;
 using TODO.Dtos;
-using TODO.Interfaces;
 
 namespace TODO.Controllers
 {
@@ -10,45 +10,41 @@ namespace TODO.Controllers
     public class UserController(IUserService userService) : ControllerBase
     {
         [HttpPost("createUser")]
-        public async Task<BaseResponseDto<UserDto?>> CreateUser([FromBody] UserDto user)
+        public async Task<ActionResult<UserDto?>> CreateUser([FromBody] UserDto user)
         {
-            BaseResponseDto<UserDto?> baseResponseDto;
             try
             {
-                baseResponseDto = new BaseResponseDto<UserDto?>(await userService.CreateUserAsync(user), 200,
-                    "User created successfully");
-                return baseResponseDto;
+                return Ok(new BaseResponseDto<UserDto>(await userService.CreateUserAsync(user), "User created successfully"));
             }
             catch (Exception e)
             {
                 if (e is UserAlreadyExistsException)
                 {
-                    baseResponseDto = new BaseResponseDto<UserDto?>(null, 500, "User already exists");
-                    return baseResponseDto;
+                    return Conflict(new BaseResponseDto<UserDto?>(null, "User already exists"));
                 }
                 else
                 {
-                    baseResponseDto = new BaseResponseDto<UserDto?>(null, 500, "Internal error");
-                    return baseResponseDto;
+                    return StatusCode(500, "Internal error");
                 }
             }
         }
         
         [HttpPost("login")]
-        public async Task<ActionResult<string>> Login([FromBody] UserDto userDto)
+        public async Task<ActionResult<LoginDto?>> Login([FromBody] UserDto userDto)
         {
             try
             {
-                return Ok(await userService.Login(userDto));
+                return Ok(new BaseResponseDto<LoginDto?>(new LoginDto(await userService.Login(userDto)),
+                    "Login successfully"));
             }
             catch (Exception e)
             {
                 if (e is UserNotFoundException)
                 {
-                    return StatusCode(404, "User not found");
+                    return NotFound(new BaseResponseDto<LoginDto?>(null, "User not found"));
                 } else if (e is PasswordIncorrectException)
                 {
-                    return StatusCode(404, "Password is incorrect");
+                    return BadRequest(new BaseResponseDto<LoginDto?>(null, "Password is incorrect"));
                 }
                 else
                 {
@@ -58,15 +54,23 @@ namespace TODO.Controllers
         }
 
         [HttpDelete("deleteUser{id}")]
-        public async Task<ActionResult<string>> DeleteUserById(int id)
+        public async Task<ActionResult<BaseResponseDto<UserDto?>>> DeleteUserById(int id)
         {
-            bool isDeleted = await userService.DeleteUserAsync(id);
-            if (isDeleted)
+            try
             {
-                return Ok("The user deleted successfully");
+                return Ok(new BaseResponseDto<UserDto?>(null, "The user deleted successfully"));
             }
-
-            return StatusCode(404, "User not found");
+            catch (Exception e)
+            {
+                if (e is UserNotFoundException)
+                {
+                    return NotFound(new BaseResponseDto<LoginDto?>(null, "User not found"));
+                }
+                else
+                {
+                    return StatusCode(500, "Internal error");
+                }
+            }
         }
     }
 }

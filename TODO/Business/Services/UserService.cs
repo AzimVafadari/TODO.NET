@@ -1,13 +1,12 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TODO.Business.Exceptions;
+using TODO.Business.Interfaces;
 using TODO.Data;
 using TODO.Dtos;
-using TODO.Interfaces;
 using TODO.Models;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
@@ -33,13 +32,17 @@ public class UserService(AppDbContext appDbContext, IConfiguration config) : IUs
         return user;
     }
 
-    public async Task<bool> DeleteUserAsync(int id)
+    public async Task<UserDto> DeleteUserAsync(int id)
     {
         User user = await appDbContext.Users.FindAsync(id) ?? throw new InvalidOperationException();
-        user.IsDeleted = true;
-        appDbContext.Users.Update(user);
-        await appDbContext.SaveChangesAsync();
-        return true;
+        if (user != null)
+        {
+            user.IsDeleted = true;
+            appDbContext.Users.Update(user);
+            await appDbContext.SaveChangesAsync();
+        }
+
+        throw new UserNotFoundException();
     }
     
     public Task<User?> GetUserByUsernameAsync(string username)
@@ -48,7 +51,7 @@ public class UserService(AppDbContext appDbContext, IConfiguration config) : IUs
             .FirstOrDefaultAsync(u => u.Username.Equals(username) && !u.IsDeleted);
     }
 
-    public async Task<Object> Login(UserDto userDto)
+    public async Task<string> Login(UserDto userDto)
     {
         User? foundUser = await GetUserByUsernameAsync(userDto.Username);
         if (foundUser == null)
@@ -58,7 +61,7 @@ public class UserService(AppDbContext appDbContext, IConfiguration config) : IUs
             throw new PasswordIncorrectException();
         }
 
-        return new { token = GenerateJwt(foundUser) };
+        return GenerateJwt(foundUser);
     }
     
     private string GenerateJwt(User user)
