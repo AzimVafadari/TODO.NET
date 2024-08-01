@@ -6,7 +6,7 @@ using Microsoft.OpenApi.Models;
 using TODO.Business.Interfaces;
 using TODO.Business.Services;
 using TODO.Data;
-using TODO.Interfaces;
+using TODO.Business.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 

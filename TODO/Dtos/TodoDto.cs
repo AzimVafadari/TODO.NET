@@ -12,5 +12,17 @@ public class TodoDto
 
     [MinLength(4), MaxLength(30), Required]
     public string Description { set; get; } = string.Empty;
-    
+
+    public TodoDto(int todoId, string status, string title, string description)
+    {
+        TodoId = todoId;
+        Status = status;
+        Title = title;
+        Description = description;
+    }
+
+    public TodoDto()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -1,8 +1,9 @@
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TODO.Business.Exceptions;
+using TODO.Business.Interfaces;
 using TODO.Dtos;
-using TODO.Interfaces;
-using TODO.Models;
 
 namespace TODO.Controllers
 {
@@ -11,44 +12,78 @@ namespace TODO.Controllers
     public class TodoControllers(ITodoService todoService) : ControllerBase
     {
         [HttpPost("createTodo"), Authorize]
-        public async Task<Todo> CreateTodo([FromBody] CreateTodoDto todo)
+        public async Task<ActionResult<BaseResponseDto<CreateTodoDto?>>> CreateTodo([FromBody] CreateTodoDto todo)
         {
-            int userId = GetUserIdFromToken();
-            Todo newTodo = new Todo(todo.Status, todo.Title, todo.Description, userId);
-            return await todoService.CreateTodoAsync(newTodo);
+            try
+            {
+               return Ok(new BaseResponseDto<CreateTodoDto>(await todoService.CreateTodoAsync(todo),
+                    "Todo created successfully"));
+            }
+            catch (Exception e)
+            {
+                return e switch
+                {
+                    InvalidOperationException => BadRequest(new BaseResponseDto<CreateTodoDto?>(null, e.Message)),
+                    _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
+                };
+            }
         }
         
         [HttpPut("updateTodo"), Authorize]
-        public async Task<Todo> UpdateTodo([FromBody] TodoDto todo)
+        public async Task<ActionResult<BaseResponseDto<TodoDto?>>> UpdateTodo([FromBody] TodoDto todo)
         {
-            int userId = GetUserIdFromToken();
-            Todo newTodo = new Todo(todo.Status, todo.Title, todo.Description, userId, todo.TodoId);
-            return await todoService.UpdateTodoAsync(newTodo);
+            try
+            {
+                return Ok(new BaseResponseDto<TodoDto>(await todoService.UpdateTodoAsync(todo),
+                    "Todo updated successfully"));
+            }
+            catch (Exception e)
+            {
+                return e switch
+                {
+                    BadHttpRequestException => BadRequest(new BaseResponseDto<TodoDto?>(null, e.Message)),
+                    KeyNotFoundException => NotFound(new BaseResponseDto<TodoDto?>(null, e.Message)),
+                    _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
+                };
+            }
         }
 
         [HttpGet("getAllTodos"), Authorize]
-        public async Task<IEnumerable<TodoDto>> GetAllTodos()
+        public async Task<ActionResult<BaseResponseDto<IEnumerable<TodoDto>?>>> GetAllTodos()
         {
-            int userId = GetUserIdFromToken();
-            return await todoService.GetAllTodosWithUserIdAsync(userId);
+            try
+            {
+                return Ok(new BaseResponseDto<IEnumerable<TodoDto>>(await todoService.GetAllTodosWithUserIdAsync(),
+                    "All todos for the user successfully returned"));
+            }
+            catch (Exception e)
+            {
+                return e switch
+                {
+                    UserNotFoundException => NotFound(new BaseResponseDto<IEnumerable<TodoDto>?>(null, e.Message)),
+                    InvalidOperationException => BadRequest(new BaseResponseDto<CreateTodoDto?>(null, e.Message)),
+                    _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
+                };
+            }
         }
 
         [HttpDelete("deleteTodo"), Authorize]
-        public async Task<bool> DeleteTodo(int todoId)
+        public async Task<ActionResult<BaseResponseDto<TodoDto?>>> DeleteTodo(int todoId)
         {
-           return await todoService.DeleteTodoAsync(todoId);
-        } 
-
-        private int GetUserIdFromToken()
-        {
-            var userIdClaim = User.FindFirst("UserId");
-
-            if (userIdClaim == null)
+            try
             {
-                throw new InvalidOperationException("User ID claim not found in token.");
+                return Ok(new BaseResponseDto<TodoDto>(await todoService.DeleteTodoAsync(todoId),
+                    "Todo successfully deleted"));
             }
-
-            return int.Parse(userIdClaim.Value);
+            catch (Exception e)
+            {
+                return e switch
+                {
+                    TodoNotFoundException => NotFound(new BaseResponseDto<TodoDto?>(null, e.Message)),
+                    TodoAlreadyDeletedException => Conflict(new BaseResponseDto<TodoDto?>(null, e.Message)),
+                    _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
+                };
+            }
         }
 
     }

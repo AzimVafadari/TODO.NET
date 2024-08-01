@@ -1,20 +1,20 @@
 ﻿using TODO.Dtos;
 
-namespace TODO.Interfaces;
+namespace TODO.Business.Interfaces;
 using TODO.Models;
 
 public interface ITodoService
 {
     // create a todo
-    Task<Todo> CreateTodoAsync(Todo todo);
+    Task<CreateTodoDto> CreateTodoAsync(CreateTodoDto todo);
     
     // edit a todo
-    Task<Todo> UpdateTodoAsync(Todo todo);
+    Task<TodoDto> UpdateTodoAsync(TodoDto todo);
     
     
     // get all todos
-    Task<IEnumerable<TodoDto>> GetAllTodosWithUserIdAsync(int userId);
+    Task<IEnumerable<TodoDto>> GetAllTodosWithUserIdAsync();
     
     // delete a todo
-    Task<bool> DeleteTodoAsync(int id);
+    Task<TodoDto> DeleteTodoAsync(int id);
 }
