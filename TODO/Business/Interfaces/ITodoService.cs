@@ -1,8 +1,6 @@
 ﻿using TODO.Dtos;
 
 namespace TODO.Business.Interfaces;
-using TODO.Models;
-
 public interface ITodoService
 {
     // create a todo

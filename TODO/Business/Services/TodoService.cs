@@ -6,13 +6,13 @@ using TODO.Dtos;
 using TODO.Models;
 
 namespace TODO.Business.Services;
-public class TodoService(AppDbContext appDbContext, HttpContext httpContext) : ITodoService
+public class TodoService(AppDbContext appDbContext, IHttpContextAccessor httpContextAccessor) : ITodoService
 {
     public async Task<CreateTodoDto> CreateTodoAsync(CreateTodoDto todo)
     {
         try
         {
-            int userId = GetUserIdFromToken(HttpContext);
+            int userId = GetUserIdFromToken();
             Todo newTodo = new Todo(todo.Status, todo.Title, todo.Description, userId);
             appDbContext.Todos.Add(newTodo);
             await appDbContext.SaveChangesAsync();
@@ -24,15 +24,15 @@ public class TodoService(AppDbContext appDbContext, HttpContext httpContext) : I
         }
     }
 
-    private HttpContext HttpContext { get; } = httpContext;
+    private IHttpContextAccessor HttpContextAccessor { get; } = httpContextAccessor;
 
     public async Task<TodoDto> UpdateTodoAsync(TodoDto todo)
     {
         try
         {
-            int userId = GetUserIdFromToken(HttpContext);
+            int userId = GetUserIdFromToken();
             // find the todo
-            Todo foundTodo = await appDbContext.Todos.FindAsync(todo.TodoId);
+            Todo? foundTodo = await appDbContext.Todos.FindAsync(todo.TodoId);
             if (foundTodo == null)
             {
                 throw new KeyNotFoundException("Todo not found");
@@ -41,9 +41,14 @@ public class TodoService(AppDbContext appDbContext, HttpContext httpContext) : I
             {
                 throw new BadHttpRequestException("No matching");
             }
+
+            foundTodo.Status = todo.Status;
+            foundTodo.Description = todo.Description;
+            foundTodo.Title = todo.Title;
             appDbContext.Todos.Update(foundTodo);
             await appDbContext.SaveChangesAsync();
-            return todo;
+            Todo? updatedTodo = await appDbContext.Todos.FindAsync(todo.TodoId);
+            return new TodoDto(updatedTodo.TodoId, updatedTodo.Status, updatedTodo.Title, updatedTodo.Description);
         }
         catch (Exception e)
         {
@@ -55,7 +60,7 @@ public class TodoService(AppDbContext appDbContext, HttpContext httpContext) : I
     {
         try
         {
-            int userId = GetUserIdFromToken(HttpContext);
+            int userId = GetUserIdFromToken();
             var user = await appDbContext.Users
                 .Include(u => u.Todos)
                 .FirstOrDefaultAsync(u => u.UserId == userId);
@@ -84,7 +89,7 @@ public class TodoService(AppDbContext appDbContext, HttpContext httpContext) : I
 
     public async Task<TodoDto> DeleteTodoAsync(int id)
     {
-        Todo todo = await appDbContext.Todos.FindAsync(id) ?? throw new InvalidOperationException();
+        Todo? todo = await appDbContext.Todos.FindAsync(id);
         if (todo == null)
         {
             throw new TodoNotFoundException("Todo not found");
@@ -100,14 +105,14 @@ public class TodoService(AppDbContext appDbContext, HttpContext httpContext) : I
         return new TodoDto(todo.TodoId, todo.Status, todo.Title, todo.Description);
     }
     
-    private int GetUserIdFromToken(HttpContext httpContext)
+    private int GetUserIdFromToken()
     {
-        if (httpContext == null)
+        if (HttpContextAccessor == null)
         {
-            throw new ArgumentNullException(nameof(httpContext));
+            throw new ArgumentNullException(nameof(HttpContextAccessor));
         }
 
-        var userIdClaim = httpContext.User.Claims.FirstOrDefault(c => c.Type == "UserId");
+        var userIdClaim = HttpContextAccessor.HttpContext?.User.FindFirst("UserId");
 
         if (userIdClaim == null)
         {

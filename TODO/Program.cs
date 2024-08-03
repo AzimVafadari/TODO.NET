@@ -6,7 +6,6 @@ using Microsoft.OpenApi.Models;
 using TODO.Business.Interfaces;
 using TODO.Business.Services;
 using TODO.Data;
-using TODO.Business.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +17,7 @@ builder.Services.AddDbContext<AppDbContext>(op =>
     op.UseSqlServer(builder.Configuration.GetConnectionString("AppDbContext")));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITodoService, TodoService>();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 // Add swagger for authentication
 builder.Services.AddSwaggerGen(option =>

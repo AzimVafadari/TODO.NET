@@ -67,7 +67,7 @@ namespace TODO.Controllers
             }
         }
 
-        [HttpDelete("deleteTodo"), Authorize]
+        [HttpDelete("deleteTodo{todoId}"), Authorize]
         public async Task<ActionResult<BaseResponseDto<TodoDto?>>> DeleteTodo(int todoId)
         {
             try

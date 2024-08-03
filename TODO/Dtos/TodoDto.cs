@@ -23,6 +23,5 @@ public class TodoDto
 
     public TodoDto()
     {
-        throw new NotImplementedException();
     }
 }
