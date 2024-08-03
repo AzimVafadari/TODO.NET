@@ -8,14 +8,15 @@ using TODO.Dtos;
 namespace TODO.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
+    [ApiController, Authorize]
     public class TodoControllers(ITodoService todoService) : ControllerBase
     {
-        [HttpPost("createTodo"), Authorize]
+        [HttpPost("createTodo")]
         public async Task<ActionResult<BaseResponseDto<CreateTodoDto?>>> CreateTodo([FromBody] CreateTodoDto todo)
         {
             try
             {
+                Console.Write("x");
                return Ok(new BaseResponseDto<CreateTodoDto>(await todoService.CreateTodoAsync(todo),
                     "Todo created successfully"));
             }
@@ -23,13 +24,14 @@ namespace TODO.Controllers
             {
                 return e switch
                 {
+                    UnauthorizedAccessException => Unauthorized(new BaseResponseDto<CreateTodoDto?>(null, "User is not authorized")),
                     InvalidOperationException => BadRequest(new BaseResponseDto<CreateTodoDto?>(null, e.Message)),
                     _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
                 };
             }
         }
         
-        [HttpPut("updateTodo"), Authorize]
+        [HttpPut("updateTodo")]
         public async Task<ActionResult<BaseResponseDto<TodoDto?>>> UpdateTodo([FromBody] TodoDto todo)
         {
             try
@@ -41,6 +43,7 @@ namespace TODO.Controllers
             {
                 return e switch
                 {
+                    UnauthorizedAccessException => Unauthorized(new BaseResponseDto<CreateTodoDto?>(null, "User is not authorized")),
                     BadHttpRequestException => BadRequest(new BaseResponseDto<TodoDto?>(null, e.Message)),
                     KeyNotFoundException => NotFound(new BaseResponseDto<TodoDto?>(null, e.Message)),
                     _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
@@ -48,7 +51,7 @@ namespace TODO.Controllers
             }
         }
 
-        [HttpGet("getAllTodos"), Authorize]
+        [HttpGet("getAllTodos")]
         public async Task<ActionResult<BaseResponseDto<IEnumerable<TodoDto>?>>> GetAllTodos()
         {
             try
@@ -60,6 +63,7 @@ namespace TODO.Controllers
             {
                 return e switch
                 {
+                    UnauthorizedAccessException => Unauthorized(new BaseResponseDto<CreateTodoDto?>(null, "User is not authorized")),
                     UserNotFoundException => NotFound(new BaseResponseDto<IEnumerable<TodoDto>?>(null, e.Message)),
                     InvalidOperationException => BadRequest(new BaseResponseDto<CreateTodoDto?>(null, e.Message)),
                     _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
@@ -67,7 +71,7 @@ namespace TODO.Controllers
             }
         }
 
-        [HttpDelete("deleteTodo{todoId}"), Authorize]
+        [HttpDelete("deleteTodo{todoId}")]
         public async Task<ActionResult<BaseResponseDto<TodoDto?>>> DeleteTodo(int todoId)
         {
             try
