@@ -8,7 +8,7 @@ namespace TODO.Controllers
 {
     [Route("api/[controller]")]
     [ApiController, Authorize]
-    public class TodoControllers(ITodoService todoService) : ControllerBase
+    public class TodoController(ITodoService todoService) : ControllerBase
     {
         [HttpPost("createTodo")]
         public async Task<ActionResult<BaseResponseDto<TodoDto?>>> CreateTodo([FromBody] CreateTodoDto todo)
