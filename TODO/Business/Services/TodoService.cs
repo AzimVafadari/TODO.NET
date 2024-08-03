@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using TODO.Business.Exceptions;
 using TODO.Business.Interfaces;
 using TODO.Data;
@@ -8,15 +9,16 @@ using TODO.Models;
 namespace TODO.Business.Services;
 public class TodoService(AppDbContext appDbContext, IHttpContextAccessor httpContextAccessor) : ITodoService
 {
-    public async Task<CreateTodoDto> CreateTodoAsync(CreateTodoDto todo)
+    public async Task<TodoDto> CreateTodoAsync(CreateTodoDto todo)
     {
         try
         {
             int userId = GetUserIdFromToken();
             Todo newTodo = new Todo(todo.Status, todo.Title, todo.Description, userId);
-            appDbContext.Todos.Add(newTodo);
+            EntityEntry<Todo> createdTodoEntity = appDbContext.Todos.Add(newTodo);
             await appDbContext.SaveChangesAsync();
-            return todo;
+            Todo createdTodo = createdTodoEntity.Entity;
+            return new TodoDto(createdTodo.TodoId, createdTodo.Status, createdTodo.Title, createdTodo.Description);
         }
         catch (Exception e)
         {

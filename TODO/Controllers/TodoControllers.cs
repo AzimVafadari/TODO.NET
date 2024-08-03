@@ -16,7 +16,6 @@ namespace TODO.Controllers
         {
             try
             {
-                Console.Write("x");
                return Ok(new BaseResponseDto<CreateTodoDto>(await todoService.CreateTodoAsync(todo),
                     "Todo created successfully"));
             }

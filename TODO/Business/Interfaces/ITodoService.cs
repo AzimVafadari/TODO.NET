@@ -4,7 +4,7 @@ namespace TODO.Business.Interfaces;
 public interface ITodoService
 {
     // create a todo
-    Task<CreateTodoDto> CreateTodoAsync(CreateTodoDto todo);
+    Task<TodoDto> CreateTodoAsync(CreateTodoDto todo);
     
     // edit a todo
     Task<TodoDto> UpdateTodoAsync(TodoDto todo);
