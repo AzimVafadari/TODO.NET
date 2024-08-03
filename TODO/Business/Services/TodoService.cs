@@ -116,8 +116,6 @@ public class TodoService(AppDbContext appDbContext, IHttpContextAccessor httpCon
 
         var userIdClaim = HttpContextAccessor.HttpContext?.User.FindFirst("UserId");
         
-        Console.Write(userIdClaim);
-
         if (userIdClaim == null)
         {
             throw new UnauthorizedAccessException("User ID claim not found in token.");

@@ -5,10 +5,10 @@ namespace TODO.Business.Interfaces;
 public interface IStatusService
 {
     // create a status
-    Task<StatusDto> CreateStatusAsync(CreateStatusDto todo);
+    Task<StatusDto> CreateStatusAsync(CreateStatusDto status);
     
     // edit a status
-    Task<StatusDto> UpdateStatusAsync(StatusDto todo);
+    Task<StatusDto> UpdateStatusAsync(StatusDto status);
     
     
     // get all statuses

@@ -1,27 +1,60 @@
-﻿using TODO.Business.Interfaces;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using TODO.Business.Exceptions;
+using TODO.Business.Interfaces;
+using TODO.Data;
 using TODO.Dtos;
+using TODO.Models;
 
 namespace TODO.Business.Services;
 
-public class StatusService : IStatusService
+public class StatusService(AppDbContext appDbContext) : IStatusService
 {
-    public Task<StatusDto> CreateStatusAsync(CreateStatusDto todo)
+    public async Task<StatusDto> CreateStatusAsync(CreateStatusDto status)
     {
-        
+        EntityEntry<Status> createdStatusEntity = await appDbContext.Statuses.AddAsync(new Status(status.StatusName));
+        Status createdStatus = createdStatusEntity.Entity;
+        return new StatusDto(createdStatus.StatusId, createdStatus.StatusName);
     }
 
-    public Task<StatusDto> UpdateStatusAsync(StatusDto todo)
+    public async Task<StatusDto> UpdateStatusAsync(StatusDto status)
     {
-        throw new NotImplementedException();
+        Status? foundStatus = await appDbContext.Statuses.FindAsync(status.StatusId);
+        if (foundStatus == null)
+        {
+            throw new StatusNotFoundException("Status not found");
+        }
+        appDbContext.Statuses.Update(new Status(foundStatus.StatusId, foundStatus.StatusName));
+        Status? updatedStatus = await appDbContext.Statuses.FindAsync(status.StatusId);
+        return new StatusDto(updatedStatus.StatusId, updatedStatus.StatusName);
     }
 
-    public Task<IEnumerable<StatusDto>> GetAllStatusesWithUserIdAsync()
+    public async Task<IEnumerable<StatusDto>> GetAllStatusesWithUserIdAsync()
     {
-        throw new NotImplementedException();
+        IAsyncEnumerable<Status> statuses = appDbContext.Statuses.AsAsyncEnumerable();
+        IEnumerable<StatusDto> statusDtos = new List<StatusDto>();
+        await foreach (var s in statuses)
+        {
+            if (!s.IsDeleted)
+                statusDtos.Append(new StatusDto(s.StatusId, s.StatusName));
+        }
+        return statusDtos;
     }
 
-    public Task<StatusDto> DeleteStatusAsync(int id)
+    public async Task<StatusDto> DeleteStatusAsync(int id)
     {
-        throw new NotImplementedException();
+        Status? foundStatus = await appDbContext.Statuses.FindAsync(id);
+        if (foundStatus == null)
+        {
+            throw new StatusNotFoundException();
+        }
+
+        if (foundStatus.IsDeleted)
+        {
+            throw new StatusAlreadyDeletedException("Status already deleted");
+        }
+        foundStatus.IsDeleted = true;
+        EntityEntry<Status> updatedStatusEntityEntry = appDbContext.Statuses.Update(foundStatus);
+        Status updatedStatus = updatedStatusEntityEntry.Entity;
+        return new StatusDto(updatedStatus.StatusId, updatedStatus.StatusName);
     }
 }
