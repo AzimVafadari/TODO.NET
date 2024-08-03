@@ -12,20 +12,20 @@ namespace TODO.Controllers
     public class TodoControllers(ITodoService todoService) : ControllerBase
     {
         [HttpPost("createTodo")]
-        public async Task<ActionResult<BaseResponseDto<CreateTodoDto?>>> CreateTodo([FromBody] CreateTodoDto todo)
+        public async Task<ActionResult<BaseResponseDto<TodoDto?>>> CreateTodo([FromBody] CreateTodoDto todo)
         {
             try
             {
-               return Ok(new BaseResponseDto<CreateTodoDto>(await todoService.CreateTodoAsync(todo),
+               return Ok(new BaseResponseDto<TodoDto>(await todoService.CreateTodoAsync(todo),
                     "Todo created successfully"));
             }
             catch (Exception e)
             {
                 return e switch
                 {
-                    UnauthorizedAccessException => Unauthorized(new BaseResponseDto<CreateTodoDto?>(null, "User is not authorized")),
-                    InvalidOperationException => BadRequest(new BaseResponseDto<CreateTodoDto?>(null, e.Message)),
-                    _ => StatusCode(500, new BaseResponseDto<UserDto?>(null, "Internal error"))
+                    UnauthorizedAccessException => Unauthorized(new BaseResponseDto<TodoDto?>(null, "User is not authorized")),
+                    InvalidOperationException => BadRequest(new BaseResponseDto<TodoDto?>(null, e.Message)),
+                    _ => StatusCode(500, new BaseResponseDto<TodoDto?>(null, "Internal error"))
                 };
             }
         }
