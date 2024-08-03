@@ -7,7 +7,7 @@ public class StatusService : IStatusService
 {
     public Task<StatusDto> CreateStatusAsync(CreateStatusDto todo)
     {
-        throw new NotImplementedException();
+        
     }
 
     public Task<StatusDto> UpdateStatusAsync(StatusDto todo)

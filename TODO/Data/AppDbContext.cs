@@ -10,6 +10,7 @@ namespace TODO.Data
         }
         public DbSet<User> Users { set; get; }
         public DbSet<Todo> Todos { set; get; }
+        public DbSet<Status> Statuses { set; get; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +32,13 @@ namespace TODO.Data
                 .HasOne(t => t.User)
                 .WithMany(u => u.Todos)
                 .HasForeignKey(t => t.UserId);
+
+            modelBuilder.Entity<Status>()
+                .HasKey(s => s.StatusId);
+            
+            modelBuilder.Entity<Status>()
+                .Property(s => s.StatusId)
+                .ValueGeneratedOnAdd();
         }
     }
 }
